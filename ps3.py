@@ -92,7 +92,7 @@ def get_word_score(word, n):
     return first_component * second_component
 
 
-def ask_user(checker, msg=''):
+def ask_user(checker, msg='', hint=''):
     '''
     msg(=): message for input
     return value of variable
@@ -102,6 +102,8 @@ def ask_user(checker, msg=''):
         var = input(msg)
         if checker(var):
             return var
+        if len(hint) != 0:
+            print(hint)
 
 
 def display_hand(hand):
@@ -326,7 +328,8 @@ def play_game(word_list):
     word_list: list of lowercase strings
     """
     total_score = 0
-    num_of_hands = int(ask_user(lambda x: type(x) == int and int(x) >= 0, msg='Enter total number of hands: '))
+    num_of_hands = int(ask_user(lambda x: x.isdecimal() and x != '0', msg='Enter total number of hands: ', 
+                                        hint='Number of hands must be positive integer.'))
     for i in range(num_of_hands):
         #deal hand
         hand = deal_hand(HAND_SIZE)
@@ -335,13 +338,15 @@ def play_game(word_list):
         for j in range(2):
             new_hand = hand
             #subtitute part
-            if substitute:
+            if j == 0 and substitute:
                 display_hand(hand)
-                ans = ask_user(lambda x: x == 'yes' or x == 'no', msg='Would you like to substitute a letter? ')
+                ans = ask_user(lambda x: x in ('yes', 'no'), msg='Would you like to substitute a letter? ', 
+                                        hint="Answer must be 'yes' or 'no'.")
                 if ans == 'yes':
                     substitute = False
-                    letter = ask_user(lambda x: len(str(x)) == 1 and str(x).isascii() and str(x).isalpha(), 
-                                               msg='Which letter would you like to replace: ')
+                    letter = ask_user(lambda x: len(x) == 1 and x.isascii() and x.isalpha(), 
+                                                msg='Which letter would you like to replace: ', 
+                                                hint='Must be one latin letter.')
                     new_hand = substitute_hand(hand, letter)
             #play hand
             hand_score = play_hand(new_hand, word_list)
@@ -349,7 +354,8 @@ def play_game(word_list):
             print('----------')
             #replay question 
             if j == 0:
-                ans = ask_user(lambda x: x in ('yes', 'no'), msg='Would you like to replay the hand? ')
+                ans = ask_user(lambda x: x in ('yes', 'no'), msg='Would you like to replay the hand? ', 
+                                        hint="Answer must be 'yes' or 'no'.")
                 if ans == 'no':
                     break
         total_score += hand_score
